@@ -1,0 +1,32 @@
+
+If we were to for example write a test program:
+
+$ cat > hello.c <<'EOF'
+#include <stdio.h>
+int main(void) {
+printf("Hello World\n");
+return 0;
+}
+EOF
+$ riscv64-unknown-elf-gcc -O2 -o hello hello.c
+
+
+
+
+
+
+To inspect the output binary:
+
+$ riscv64-unknown-elf-readelf -a hello | less
+$ riscv64-unknown-elf-objdump -d hello | less
+
+
+
+
+
+To run test program:
+
+$ spike pk hello
+
+
+

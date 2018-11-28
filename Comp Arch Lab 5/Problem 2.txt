@@ -1,0 +1,118 @@
+.data
+neg3:	.asciiz "f(-3) should be 6, and it is: "
+neg2:	.asciiz "f(-2) should be 61, and it is: "
+neg1:	.asciiz "f(-1) should be 17, and it is: "
+zero:	.asciiz "f(0) should be -38, and it is: "
+pos1:	.asciiz "f(1) should be 19, and it is: "
+pos2:	.asciiz "f(2) should be 42, and it is: "
+pos3:	.asciiz "f(3) should be 5, and it is: "
+
+output:	.word	6, 61, 17, -38, 19, 42, 5
+.text
+main:
+	la	a0, neg3
+	jal	print_str
+	li	a0, -3
+	jal	f		# evaluate f(-3); should be 6
+	jal	print_int
+	jal	print_newline
+	
+	la	a0, neg2
+	jal	print_str
+	li	a0, -2
+	jal	f		# evaluate f(-2); should be 61
+	jal	print_int
+	jal	print_newline
+	
+	la	a0, neg1
+	jal	print_str
+	li	a0, -1
+	jal	f		# evaluate f(-1); should be 17
+	jal	print_int
+	jal	print_newline
+	
+	la	a0, zero
+	jal	print_str
+	li	a0, 0
+	jal	f		# evaluate f(0); should be -38
+	jal	print_int
+	jal	print_newline
+	
+	la	a0, pos1
+	jal	print_str
+	li	a0, 1
+	jal	f		# evaluate f(1); should be 19
+	jal	print_int
+	jal	print_newline
+	
+	la	a0, pos2
+	jal	print_str
+	li	a0, 2
+	jal	f		# evaluate f(2); should be 42
+	jal	print_int
+	jal	print_newline
+	
+	la	a0, pos3
+	jal	print_str
+	li	a0, 3
+	jal	f		# evaluate C(4,0); should be 5
+	jal	print_int
+	jal	print_newline
+
+	li	a0, 10
+	ecall
+
+# calculate f(a0)
+f:
+	la	t0, output	# Hmm... why might this be a good idea?
+	
+	# YOUR CODE GOES HERE!	# Note that we are given  {-3, -2, -1, 0, 1, 2, 3}
+	lw	t1, 0(s0)	# Loads arr[0] into register t1 which is the -3
+	add	t2, t1, 9	# Now set t2 equal to t1 + 9 which is -3+9=6
+	sw	t1, 0(s0)	# Now store that as new arr[0]
+				# This has now made it to where arr[0] went from -3 to 6 as its new value
+				# The same can be done for the others
+
+	lw	t1, 4(s0)	# Loads arr[1] into register t1 which is the -2
+	add	t2, t1, 63	# Now set t2 equal to t1 + 9 which is -2+63=61
+	sw	t1, 4(s0)
+
+	lw	t1, 8(s0)	# Loads arr[2] into register t1 which is the -1
+	add	t2, t1, 18	# Now set t2 equal to t1 + 18 which is -1+18=17
+	sw	t1, 8(s0)
+
+	lw	t1, 12(s0)	# Loads arr[3] into register t1 which is the 0
+	sub	t2, t1, 63	# Now set t2 equal to t1 - 38 which is 0-38=-38
+	sw	t1, 12(s0)
+
+	lw	t1, 16(s0)	# Loads arr[4] into register t1 which is the 1
+	add	t2, t1, 18	# Now set t2 equal to t1 + 18 which is 1+18=19
+	sw	t1, 16(s0)
+
+	lw	t1, 20(s0)	# Loads arr[5] into register t1 which is the 2
+	add	t2, t1, 40	# Now set t2 equal to t1 + 40 which is 2+40=42
+	sw	t1, 20(s0)
+
+	lw	t1, 24(s0)	# Loads arr[6] into register t1 which is the 3
+	add	t2, t1, 2	# Now set t2 equal to t1 + 2 which is 3+2=5
+	sw	t1, 24(s0)
+	
+	jr	ra		# Always remember to jr ra after your function!
+  
+print_int:
+	mv a1, a0
+	li	a0, 1
+	ecall
+	jr	ra
+
+print_str:
+	mv a1, a0
+	li	a0, 4
+	ecall
+	jr	ra
+	
+print_newline:
+	li	a1, '\n'
+	li	a0, 11
+	ecall
+	jr	ra
