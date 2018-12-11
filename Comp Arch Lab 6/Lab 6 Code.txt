@@ -1,0 +1,99 @@
+//IMPORTANT NOTE: Even with redownloading the new code I couldn't find the changes
+//mentioned in the announcement so I used the code I was given.
+
+# quad_sol.s
+# This assembly program calculates the integer solutions of a quadratic polynomial.
+# Inputs : The coefficients a,b,c of the equation a*x^2 + b*x + c = 0
+# Output : The two integer solutions. 
+#
+# All numbers are 32 bit integers
+
+.globl main
+
+main: 					# Read all inputs and put them in floating point registers.
+
+	li t1, 1           # a=1
+    li t2, -3          # b=-3
+    li t3, 2           # c=2
+	
+	
+	# In the following lines all the necessary steps are taken to 
+	# calculate the discriminant of the quadratic equation
+	# D = b^2 - 4*a*c
+	
+SECTION 1 RE-ORDERED
+#li t0, 2 		
+addi a3,x0,4        	#re-ordered addi to above because it does not depend on anything but 
+having it below results in stalls because mul t5,t5,a3 depends on the addi so having it here means no stall needed.[1 CC saved]
+
+mul t5,t1,t3 		#switched mul t4,t2,t2 with mul t5,t1,t3 to account for mul t5,t5,a3 
+requiring the t5 from mul t5,t1,t3.[1 CC saved]
+	
+mul t4,t2,t2 		
+
+mul t5,t5,a3 	
+
+sub t6,t4,t5 		#Although this sub needs a stall as it depends on t5 from the previous we 
+do not have another instruction to put in between so a stall will be kept
+
+	From section 1 we saved two clock cycles total thus far.
+
+SECTION 2 RE-ORDERED
+sqrtloop:			# calculating the integer square root of D
+
+mul s2,s0,s0
+
+addi s0,x0, 1		#We switched the addi and bge because bge requires s2 from mul 
+and thus needed a stall so having addi which is not dependant on anything else in between saves us from having to use a stall.   
+[1 CC Saved]
+	
+bge s2, s1, endsqrt
+	
+	From section 2 we saved one clock cycle.
+
+SECTION 3 RE-ORDERED
+endsqrt:
+	neg s2,t2	
+
+li t0, 2 		# We moved li up here to act as the stall between the neg and add since 
+add depends on the s2 from the neg. Also having li up here means that the t0 that mul depends on for it does not require mul to have stalls before it since it is done at an earlier clock cycle. [3 CC Saved]
+	
+add s3,s2,s0 	
+	
+sub s4,s2,s0 	
+	
+mul s5,t1,t0 	# Between this mul and the next div we need to stall. We could put the 
+sub in between them to lower the clock cycle but that would mean adding a stall to mul because after li two clock cycle stalls are needed before the t0 can be used properly. The current position of the sub acts in place of the second stall that is needed so moving it would not save any clock cycles.
+	
+div s6,s3,s5 	
+	
+div s7,s4,s5 	
+
+	From section 3 we saved three clock cycles.
+		
+	#Print the calculated solutions.
+
+	li a0, 4			# Load print_string syscall code to register v0 for the 1st result string
+	la a1, str1 			# Load actual string to register a0
+	ecall
+	
+	li a0 1			# Load print_int syscall code to register v0 for the 1st result string
+	mv a1, s6			# Load actual integer to register a0
+	ecall
+	
+	li a0, 4			# Load print_string syscall code to register v0 for the 1st result string
+	la a1, str2			# Load actual string to register a0
+	ecall
+	
+	li a0, 1
+	mv a1, s7
+	ecall
+	
+	li a0, 10
+	ecall
+	
+.data
+	
+	str1: .asciiz "The first integer solution is: "
+	
+	str2: .asciiz "\nThe second integer solution is: "
